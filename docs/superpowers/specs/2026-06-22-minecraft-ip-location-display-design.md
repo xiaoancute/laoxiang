@@ -17,7 +17,18 @@ This is preferred over scoreboard team name prefixes because it can show the loc
 - No client-side renderer or client-only dependency.
 - No custom protocol that requires a client mod.
 - No bundled third-party IP database. Server owners provide the database file in the config directory.
+- No default online lookup. Sending player IPs to third-party services must be an explicit server-owner choice.
 - No Paper/Bukkit plugin support in this implementation.
+
+## Accuracy Expectations
+
+IP location is approximate. It can be wrong for mobile networks, VPNs, proxies, cloud providers, campus networks, and ISP address blocks that were recently reassigned.
+
+The mod supports both offline and online lookup modes:
+
+- Offline lookup is private, fast, and works without network access, but accuracy depends on the freshness of the local database.
+- Online lookup can be more current, but sends player IPs to the configured provider and depends on provider availability, rate limits, and terms of use.
+- Hybrid lookup uses the local database first and falls back to the configured online provider when local lookup returns no useful result.
 
 ## Components
 
@@ -38,9 +49,11 @@ This is preferred over scoreboard team name prefixes because it can show the loc
 - Resolve the normalized IP through a provider interface.
 - Cache resolved locations by IP to avoid repeated lookups.
 
-The first implementation should use a small provider abstraction so tests can use an in-memory fake provider. The production provider uses `org.lionsoul:ip2region:2.7.0` with an optional local `ip2region.xdb` file. The default database path is `config/iplocationdisplay/ip2region.xdb`.
+The first implementation uses a small provider abstraction so tests can use an in-memory fake provider. The local production provider uses `org.lionsoul:ip2region:2.7.0` with an optional local `ip2region.xdb` file. The default database path is `config/iplocationdisplay/ip2region.xdb`.
 
-If the database file is missing or a public IP cannot be resolved, the display is hidden by default. Local and private addresses use the configured local text so local testing still shows a visible label.
+The online production provider uses a configurable HTTP URL template. The server owner configures the endpoint, timeout, and JSON field path that contains the display location. No endpoint is enabled by default.
+
+If the configured providers cannot resolve a public IP, the display is hidden by default. Local and private addresses use the configured local text so local testing still shows a visible label.
 
 ### Head display manager
 
@@ -55,6 +68,7 @@ If the database file is missing or a public IP cannot be resolved, the display i
 Use a NeoForge server config with these initial options:
 
 - `enabled`: global enable switch.
+- `providerMode`: default `local`; allowed values are `local`, `http`, and `hybrid`.
 - `displayFormat`: default `[%location%]`.
 - `verticalOffset`: default `2.6`.
 - `tickInterval`: update frequency, default `5` ticks.
@@ -62,13 +76,18 @@ Use a NeoForge server config with these initial options:
 - `unknownText`: default `Unknown`.
 - `localText`: default `Local`.
 - `databasePath`: default `config/iplocationdisplay/ip2region.xdb`.
+- `httpUrlTemplate`: blank by default; example shape is `https://example.com/lookup?ip=%ip%`.
+- `httpLocationJsonPath`: blank by default; example shape is `data.region`.
+- `httpTimeoutMillis`: default `2000`.
 
 ### Error handling
 
-- Lookup failures should not block login.
+- Lookup failures do not block login.
 - Resolver errors are logged once per IP.
 - If a player's address cannot be read, use `unknownText` when `showUnknown` is true; otherwise hide the display.
 - If display entity creation fails, log and continue without kicking the player.
+- HTTP lookup runs off the main server thread and times out according to `httpTimeoutMillis`.
+- Successful and failed lookup results are cached by IP to reduce repeated local and HTTP work.
 
 ### TextDisplay style
 
@@ -84,10 +103,11 @@ Use a NeoForge server config with these initial options:
 
 1. Player joins the server.
 2. The mod reads and normalizes the player's remote IP.
-3. The resolver returns a location string or a fallback.
-4. The display manager spawns a `TextDisplay` entity above the player.
-5. On server ticks, the display manager updates the entity position.
-6. On logout, dimension change, or shutdown, the display manager removes stale entities.
+3. The resolver selects local, HTTP, or hybrid lookup from `providerMode`.
+4. The resolver returns a location string or a fallback.
+5. The display manager spawns a `TextDisplay` entity above the player.
+6. On server ticks, the display manager updates the entity position.
+7. On logout, dimension change, or shutdown, the display manager removes stale entities.
 
 ## Testing
 
@@ -96,10 +116,12 @@ Implementation will be test-first for pure logic:
 - IP extraction and normalization.
 - Private/local IP detection.
 - Resolver cache behavior.
+- Local, HTTP, and hybrid provider selection.
+- HTTP timeout and missing-field behavior using a fake HTTP client.
 - Display text formatting.
 - Tracking lifecycle decisions in the display manager where possible without a live server.
 
-Runtime verification should include:
+Runtime verification includes:
 
 - `./gradlew test`
 - `./gradlew build`
