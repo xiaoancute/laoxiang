@@ -17,14 +17,13 @@ This is preferred over scoreboard team name prefixes because it can show the loc
 - No client-side renderer or client-only dependency.
 - No custom protocol that requires a client mod.
 - No bundled third-party IP database. Server owners provide the database file in the config directory.
-- No default online lookup. Sending player IPs to third-party services must be an explicit server-owner choice.
 - No Paper/Bukkit plugin support in this implementation.
 
 ## Accuracy Expectations
 
 IP location is approximate. It can be wrong for mobile networks, VPNs, proxies, cloud providers, campus networks, and ISP address blocks that were recently reassigned.
 
-The mod supports both offline and online lookup modes:
+The mod supports both offline and online lookup modes. The default favors accuracy and uses the built-in `ip-api.com` HTTP preset. Server owners who do not want to send player IPs to a third-party lookup service can switch `providerMode` to `local`.
 
 - Offline lookup is private, fast, and works without network access, but accuracy depends on the freshness of the local database.
 - Online lookup can be more current, but sends player IPs to the configured provider and depends on provider availability, rate limits, and terms of use.
@@ -51,7 +50,7 @@ The mod supports both offline and online lookup modes:
 
 The first implementation uses a small provider abstraction so tests can use an in-memory fake provider. The local production provider uses `org.lionsoul:ip2region:2.7.0` with an optional local `ip2region.xdb` file. The default database path is `config/iplocationdisplay/ip2region.xdb`.
 
-The online production provider uses a configurable HTTP URL template. The server owner configures the endpoint, timeout, and JSON field path that contains the display location. No endpoint is enabled by default.
+The online production provider uses a configurable HTTP URL template. The default preset calls `http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query` and formats the display from `%country% %regionName% %city%`. The formatter collapses extra whitespace and omits missing fields.
 
 If the configured providers cannot resolve a public IP, the display is hidden by default. Local and private addresses use the configured local text so local testing still shows a visible label.
 
@@ -68,7 +67,8 @@ If the configured providers cannot resolve a public IP, the display is hidden by
 Use a NeoForge server config with these initial options:
 
 - `enabled`: global enable switch.
-- `providerMode`: default `local`; allowed values are `local`, `http`, and `hybrid`.
+- `providerMode`: default `http`; allowed values are `local`, `http`, and `hybrid`.
+- `httpPreset`: default `ip-api-com`; allowed values are `ip-api-com` and `custom`.
 - `displayFormat`: default `[%location%]`.
 - `verticalOffset`: default `2.6`.
 - `tickInterval`: update frequency, default `5` ticks.
@@ -76,8 +76,10 @@ Use a NeoForge server config with these initial options:
 - `unknownText`: default `Unknown`.
 - `localText`: default `Local`.
 - `databasePath`: default `config/iplocationdisplay/ip2region.xdb`.
-- `httpUrlTemplate`: blank by default; example shape is `https://example.com/lookup?ip=%ip%`.
-- `httpLocationJsonPath`: blank by default; example shape is `data.region`.
+- `httpUrlTemplate`: default `http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query`.
+- `httpSuccessJsonPath`: default `status`.
+- `httpSuccessValue`: default `success`.
+- `httpLocationTemplate`: default `%country% %regionName% %city%`.
 - `httpTimeoutMillis`: default `2000`.
 
 ### Error handling
@@ -88,6 +90,7 @@ Use a NeoForge server config with these initial options:
 - If display entity creation fails, log and continue without kicking the player.
 - HTTP lookup runs off the main server thread and times out according to `httpTimeoutMillis`.
 - Successful and failed lookup results are cached by IP to reduce repeated local and HTTP work.
+- HTTP 429, non-2xx responses, invalid JSON, missing success markers, and empty formatted locations count as lookup failures.
 
 ### TextDisplay style
 
@@ -117,7 +120,8 @@ Implementation will be test-first for pure logic:
 - Private/local IP detection.
 - Resolver cache behavior.
 - Local, HTTP, and hybrid provider selection.
-- HTTP timeout and missing-field behavior using a fake HTTP client.
+- HTTP success marker, timeout, non-2xx, invalid JSON, and missing-field behavior using a fake HTTP client.
+- HTTP location template formatting with top-level and dotted JSON paths.
 - Display text formatting.
 - Tracking lifecycle decisions in the display manager where possible without a live server.
 
