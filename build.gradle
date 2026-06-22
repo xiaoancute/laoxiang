@@ -32,7 +32,7 @@ neoForge {
     }
 
     mods {
-        iplocationdisplay {
+        laoxiang {
             sourceSet sourceSets.main
         }
     }

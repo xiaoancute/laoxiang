@@ -11,7 +11,7 @@ if [[ -z "$NEOFORGE_VERSION" ]]; then
 fi
 
 if [[ -z "$MOD_JAR" ]]; then
-  MOD_JAR="$(find "$ROOT_DIR/build/libs" -maxdepth 1 -name 'iplocationdisplay-*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | sort | tail -n 1)"
+  MOD_JAR="$(find "$ROOT_DIR/build/libs" -maxdepth 1 -name 'laoxiang-*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | sort | tail -n 1)"
 fi
 
 if [[ ! -f "$MOD_JAR" ]]; then
@@ -44,7 +44,7 @@ online-mode=false
 server-port=25565
 enable-query=false
 enable-rcon=false
-motd=IP Location Display smoke test
+motd=LaoXiang smoke test
 EOF
 
 echo "Starting temporary NeoForge server"
@@ -57,7 +57,7 @@ SERVER_PID=$!
 loaded=false
 generated=false
 for _ in $(seq 1 120); do
-  if [[ -f "$LOG_FILE" ]] && grep -q "IP Location Display mod loaded" "$LOG_FILE"; then
+  if [[ -f "$LOG_FILE" ]] && grep -q "LaoXiang mod loaded" "$LOG_FILE"; then
     loaded=true
   fi
   if [[ -f "$CONFIG_FILE" ]] && grep -q 'httpPreset = "ip-sb"' "$CONFIG_FILE"; then

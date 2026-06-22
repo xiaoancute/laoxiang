@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 
 @Mod(IpLocationDisplayMod.MOD_ID)
 public final class IpLocationDisplayMod {
-    public static final String MOD_ID = "iplocationdisplay";
+    public static final String MOD_ID = "laoxiang";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private ExecutorService lookupExecutor;
@@ -39,7 +39,7 @@ public final class IpLocationDisplayMod {
     private PlayerDisplayManager displayManager;
 
     public IpLocationDisplayMod(IEventBus modEventBus, ModContainer modContainer) {
-        LOGGER.info("IP Location Display mod loaded");
+        LOGGER.info("LaoXiang mod loaded");
         modContainer.registerConfig(
                 ModConfig.Type.valueOf(IpLocationConfig.CONFIG_TYPE_NAME),
                 IpLocationConfig.SPEC,
@@ -55,7 +55,7 @@ public final class IpLocationDisplayMod {
 
     private void onServerStarting(ServerStartingEvent event) {
         IpLocationConfig.RuntimeSettings settings = IpLocationConfig.runtimeSettings();
-        LOGGER.info("IP Location Display config: enabled={}, providerMode={}, displayFormat={}, showUnknown={}",
+        LOGGER.info("LaoXiang config: enabled={}, providerMode={}, displayFormat={}, showUnknown={}",
                 settings.enabled(), settings.providerMode(), settings.displayFormat(), settings.showUnknown());
         if (settings.enabled()) {
             JsonPathReader jsonPathReader = new JsonPathReader();
@@ -92,7 +92,7 @@ public final class IpLocationDisplayMod {
                     settings.showUnknown()
             );
             displayManager = new PlayerDisplayManager(resolver, new DisplayTextFormatter(), settings);
-            LOGGER.info("IP Location Display enabled");
+            LOGGER.info("LaoXiang enabled");
         }
     }
 

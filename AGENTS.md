@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a Java 21 NeoForge server-side mod for Minecraft 1.21.1. Main code lives under `src/main/java/com/xiaohunao/iplocationdisplay`, split by concern:
+This is a Java 21 NeoForge server-side mod for Minecraft 1.21.1. The mod id is `laoxiang`, while Java packages still live under `src/main/java/com/xiaohunao/iplocationdisplay`, split by concern:
 
 - `config/` handles generated TOML settings.
 - `display/` manages text display entities and playtime/location formatting.

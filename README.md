@@ -1,4 +1,4 @@
-# IP Location Display
+# 老乡 (LaoXiang)
 
 NeoForge 1.21.1 server-side mod that shows a player's IP location above their head using vanilla `minecraft:text_display` entities.
 
