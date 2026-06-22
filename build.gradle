@@ -39,6 +39,8 @@ neoForge {
 }
 
 dependencies {
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+
     jarJar(implementation('org.lionsoul:ip2region:2.7.0')) {
         version {
             strictly '[2.7,3.0)'
@@ -49,6 +51,7 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
