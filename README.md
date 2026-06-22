@@ -136,5 +136,5 @@ Result: `[中国 广东 广州 电信 | 游玩: 120h]`
 - Local/private addresses display `localText`.
 - Unknown public locations are hidden by default.
 - Set `showUnknown = true` to display `unknownText`.
-- Display position updates every `tickInterval` server ticks.
+- Display position updates every `tickInterval` server ticks. Keep `tickInterval = 1` for the most responsive tracking.
 - The display is removed when a player leaves or changes dimension.

@@ -253,7 +253,7 @@ public final class PlayerDisplayManager {
         tag.putInt("background", 1073741824);
         tag.putBoolean("shadow", true);
         tag.putBoolean("see_through", false);
-        tag.putInt("teleport_duration", Math.min(settings.tickInterval(), 59));
+        tag.putInt("teleport_duration", 0);
         return tag;
     }
 

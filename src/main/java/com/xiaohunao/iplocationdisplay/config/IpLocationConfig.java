@@ -27,7 +27,7 @@ public final class IpLocationConfig {
             .comment("Vertical display offset above the player.")
             .defineInRange("verticalOffset", 2.6D, 0.0D, 10.0D);
     public static final ModConfigSpec.IntValue TICK_INTERVAL = BUILDER
-            .comment("Display position update interval in server ticks.")
+            .comment("Display position update interval in server ticks. Use 1 for the most responsive tracking.")
             .defineInRange("tickInterval", 1, 1, 200);
     public static final ModConfigSpec.BooleanValue SHOW_PLAYTIME = BUILDER
             .comment("Show player playtime in the head display.")
