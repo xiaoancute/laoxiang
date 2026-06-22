@@ -3,22 +3,22 @@ loaderVersion = "[4,)"
 license = "MIT"
 
 [[mods]]
-modId = "iplocationdisplay"
+modId = "laoxiang"
 version = "0.1.3"
-displayName = "IP Location Display"
+displayName = "LaoXiang (老乡)"
 authors = "xiaohunao"
 description = '''
 Shows player IP locations above player heads on NeoForge servers.
 '''
 
-[[dependencies.iplocationdisplay]]
+[[dependencies.laoxiang]]
 modId = "minecraft"
 type = "required"
 versionRange = "[1.21.1,1.21.2)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.iplocationdisplay]]
+[[dependencies.laoxiang]]
 modId = "neoforge"
 type = "required"
 versionRange = "[21.1,)"
