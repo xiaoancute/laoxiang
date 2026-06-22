@@ -15,16 +15,18 @@ Clients do not need to install this mod.
 The default provider is online lookup through:
 
 ```text
-http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query
+https://api.ip.sb/geoip/%ip%
 ```
 
 The default displayed location template is:
 
 ```text
-%country% %regionName% %city%
+%country_localized% %region_localized% %city_localized%
 ```
 
 IP location is approximate. Mobile networks, VPNs, proxies, cloud providers, campus networks, and recently reassigned ISP ranges can show inaccurate locations.
+
+If you generated config with an older jar, set `httpPreset = "ip-sb"` or delete the old generated config so the server writes the new defaults.
 
 ## Privacy
 
@@ -46,6 +48,7 @@ Online lookup:
 ```toml
 enabled = true
 providerMode = "http"
+httpPreset = "ip-sb"
 displayFormat = "[%location%]"
 showUnknown = false
 ```

@@ -52,7 +52,8 @@ public final class HttpLocationProvider implements LocationProvider {
                 return Optional.empty();
             }
 
-            boolean success = jsonPathReader.read(element.getAsJsonObject(), successJsonPath)
+            boolean success = successJsonPath == null || successJsonPath.isBlank()
+                    || jsonPathReader.read(element.getAsJsonObject(), successJsonPath)
                     .map(value -> value.equalsIgnoreCase(successValue))
                     .orElse(false);
             if (!success) {

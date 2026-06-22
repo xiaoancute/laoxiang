@@ -7,6 +7,7 @@ import com.xiaohunao.iplocationdisplay.display.PlayerDisplayManager;
 import com.xiaohunao.iplocationdisplay.location.AddressNormalizer;
 import com.xiaohunao.iplocationdisplay.location.CachedLocationResolver;
 import com.xiaohunao.iplocationdisplay.location.HttpLocationProvider;
+import com.xiaohunao.iplocationdisplay.location.HttpProviderPreset;
 import com.xiaohunao.iplocationdisplay.location.Ip2RegionLocationProvider;
 import com.xiaohunao.iplocationdisplay.location.JdkHttpLookupClient;
 import com.xiaohunao.iplocationdisplay.location.JsonPathReader;
@@ -55,11 +56,18 @@ public final class IpLocationDisplayMod {
         if (settings.enabled()) {
             JsonPathReader jsonPathReader = new JsonPathReader();
             LocationProvider localProvider = new Ip2RegionLocationProvider(settings.databasePath());
-            LocationProvider httpProvider = new HttpLocationProvider(
+            HttpProviderPreset httpPreset = HttpProviderPreset.resolve(
+                    settings.httpPreset(),
                     settings.httpUrlTemplate(),
                     settings.httpSuccessJsonPath(),
                     settings.httpSuccessValue(),
-                    settings.httpLocationTemplate(),
+                    settings.httpLocationTemplate()
+            );
+            LocationProvider httpProvider = new HttpLocationProvider(
+                    httpPreset.urlTemplate(),
+                    httpPreset.successJsonPath(),
+                    httpPreset.successValue(),
+                    httpPreset.locationTemplate(),
                     Duration.ofMillis(settings.httpTimeoutMillis()),
                     new JdkHttpLookupClient(),
                     jsonPathReader,

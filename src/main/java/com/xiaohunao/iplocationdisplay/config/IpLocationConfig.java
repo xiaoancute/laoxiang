@@ -15,8 +15,8 @@ public final class IpLocationConfig {
             .comment("Location provider mode: local, http, or hybrid.")
             .define("providerMode", "http");
     public static final ModConfigSpec.ConfigValue<String> HTTP_PRESET = BUILDER
-            .comment("HTTP provider preset: ip-api-com or custom.")
-            .define("httpPreset", "ip-api-com");
+            .comment("HTTP provider preset: ip-sb, ip-api-com, or custom.")
+            .define("httpPreset", "ip-sb");
     public static final ModConfigSpec.ConfigValue<String> DISPLAY_FORMAT = BUILDER
             .comment("Text format for the head display. Use %location% for the resolved location.")
             .define("displayFormat", "[%location%]");
@@ -40,16 +40,16 @@ public final class IpLocationConfig {
             .define("databasePath", "config/iplocationdisplay/ip2region.xdb");
     public static final ModConfigSpec.ConfigValue<String> HTTP_URL_TEMPLATE = BUILDER
             .comment("HTTP lookup URL template. Use %ip% for the player IP.")
-            .define("httpUrlTemplate", "http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query");
+            .define("httpUrlTemplate", "https://api.ip.sb/geoip/%ip%");
     public static final ModConfigSpec.ConfigValue<String> HTTP_SUCCESS_JSON_PATH = BUILDER
             .comment("JSON path containing the provider success marker.")
-            .define("httpSuccessJsonPath", "status");
+            .define("httpSuccessJsonPath", "");
     public static final ModConfigSpec.ConfigValue<String> HTTP_SUCCESS_VALUE = BUILDER
             .comment("Expected success marker value.")
-            .define("httpSuccessValue", "success");
+            .define("httpSuccessValue", "");
     public static final ModConfigSpec.ConfigValue<String> HTTP_LOCATION_TEMPLATE = BUILDER
             .comment("Location template built from HTTP JSON fields.")
-            .define("httpLocationTemplate", "%country% %regionName% %city%");
+            .define("httpLocationTemplate", "%country_localized% %region_localized% %city_localized%");
     public static final ModConfigSpec.IntValue HTTP_TIMEOUT_MILLIS = BUILDER
             .comment("HTTP lookup timeout in milliseconds.")
             .defineInRange("httpTimeoutMillis", 2000, 100, 30000);
