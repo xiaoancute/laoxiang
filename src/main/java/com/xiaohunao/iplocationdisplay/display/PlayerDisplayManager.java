@@ -24,6 +24,7 @@ public final class PlayerDisplayManager {
     private final CachedLocationResolver resolver;
     private final DisplayTextFormatter displayTextFormatter;
     private final RemoteAddressReader remoteAddressReader;
+    private final PlaytimeReader playtimeReader;
     private final IpLocationConfig.RuntimeSettings settings;
     private final Map<UUID, DisplayState> displays = new ConcurrentHashMap<>();
     private int ticks;
@@ -37,6 +38,7 @@ public final class PlayerDisplayManager {
         this.displayTextFormatter = displayTextFormatter;
         this.remoteAddressReader = new RemoteAddressReader();
         this.settings = settings;
+        this.playtimeReader = new PlaytimeReader(settings.playtimeHourThreshold());
     }
 
     public void onPlayerLogin(ServerPlayer player) {
@@ -133,7 +135,11 @@ public final class PlayerDisplayManager {
             kill(server, previous);
         }
 
-        String text = displayTextFormatter.format(settings.displayFormat(), ipLocation.value());
+        String playtimeStr = settings.showPlaytime()
+            ? playtimeReader.getPlaytime(player)
+            : "";
+
+        String text = displayTextFormatter.format(settings.displayFormat(), ipLocation.value(), playtimeStr);
         if (!text.isBlank()) {
             spawn(player, text);
         }
