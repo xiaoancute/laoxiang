@@ -68,6 +68,37 @@ class HttpLocationProviderTest {
     }
 
     @Test
+    void resolvesForeignIpSbResponseWithRawIsp() throws Exception {
+        FakeHttpLookupClient client = new FakeHttpLookupClient(new HttpLookupResponse(200, """
+                {
+                  "country": "United States",
+                  "country_code": "US",
+                  "region": "California",
+                  "region_code": "CA",
+                  "city": "Mountain View",
+                  "isp": "Google LLC",
+                  "ip": "8.8.8.8"
+                }
+                """));
+        JsonPathReader jsonPathReader = new JsonPathReader();
+        HttpLocationProvider provider = new HttpLocationProvider(
+                "https://api.ip.sb/geoip/%ip%",
+                "",
+                "",
+                "%country_localized% %region_localized% %city_localized% %isp_localized%",
+                Duration.ofMillis(2000),
+                client,
+                jsonPathReader,
+                new LocationTemplateFormatter(jsonPathReader)
+        );
+
+        Optional<IpLocation> location = provider.lookup("8.8.8.8");
+
+        assertEquals(Optional.of(new IpLocation("United States California Mountain View Google LLC")), location);
+        assertEquals("https://api.ip.sb/geoip/8.8.8.8", client.requestedUrl);
+    }
+
+    @Test
     void returnsEmptyForHttp429() throws Exception {
         FakeHttpLookupClient client = new FakeHttpLookupClient(new HttpLookupResponse(429, "Too Many Requests"));
 

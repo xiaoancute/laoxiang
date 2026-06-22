@@ -188,7 +188,7 @@ public final class LocationTemplateFormatter {
     }
 
     private Optional<String> ispLocalized(JsonObject root) {
-        String value = Stream.of("isp", "organization", "org", "asn_organization", "asname", "as")
+        String value = ispParts()
                 .map(path -> jsonPathReader.read(root, path))
                 .flatMap(Optional::stream)
                 .map(String::trim)
@@ -214,7 +214,26 @@ public final class LocationTemplateFormatter {
         if (containsAny(value, "china telecom", "chinanet", "ctnet", "cn2")) {
             return Optional.of("电信");
         }
-        return Optional.empty();
+        return rawIsp(root);
+    }
+
+    private Optional<String> rawIsp(JsonObject root) {
+        return ispParts()
+                .map(path -> jsonPathReader.read(root, path))
+                .flatMap(Optional::stream)
+                .map(String::trim)
+                .filter(part -> !part.isEmpty())
+                .map(this::stripAsnPrefix)
+                .filter(part -> !part.isEmpty())
+                .findFirst();
+    }
+
+    private Stream<String> ispParts() {
+        return Stream.of("isp", "organization", "org", "asn_organization", "asname", "as");
+    }
+
+    private String stripAsnPrefix(String value) {
+        return value.replaceFirst("(?i)^AS\\d+\\s+", "").trim();
     }
 
     private boolean containsAny(String value, String... needles) {

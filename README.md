@@ -24,7 +24,7 @@ The default displayed location template is:
 %country_localized% %region_localized% %city_localized% %isp_localized%
 ```
 
-`%isp_localized%` normalizes common Chinese network names to `电信`, `移动`, `联通`, `广电`, or `教育网` when the lookup provider returns ISP/ASN fields.
+`%isp_localized%` normalizes common Chinese network names to `电信`, `移动`, `联通`, `广电`, or `教育网` when the lookup provider returns ISP/ASN fields. Other networks fall back to the provider's ISP name, such as `Google LLC` or `Comcast Cable`.
 
 IP location is approximate. Mobile networks, VPNs, proxies, cloud providers, campus networks, and recently reassigned ISP ranges can show inaccurate locations.
 

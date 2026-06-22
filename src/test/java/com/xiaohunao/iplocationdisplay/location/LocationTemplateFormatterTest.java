@@ -79,9 +79,17 @@ class LocationTemplateFormatterTest {
     }
 
     @Test
-    void omitsUnknownLocalizedIsp() {
+    void fallsBackToRawIspWhenNoChineseOperatorMatches() {
         JsonObject root = JsonParser.parseString("{\"isp\":\"Example Hosting\"}").getAsJsonObject();
 
-        assertEquals("中国", formatter.format(root, "中国 %isp_localized%"));
+        assertEquals("United States California Example Hosting", formatter.format(root,
+                "United States California %isp_localized%"));
+    }
+
+    @Test
+    void stripsAsnPrefixFromRawIspFallback() {
+        JsonObject root = JsonParser.parseString("{\"as\":\"AS15169 Google LLC\"}").getAsJsonObject();
+
+        assertEquals("Google LLC", formatter.format(root, "%isp_localized%"));
     }
 }
