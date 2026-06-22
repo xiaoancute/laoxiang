@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class PlayerDisplayManager {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final int DUPLICATE_CLEANUP_INTERVAL_TICKS = 20;
 
     private final CachedLocationResolver resolver;
     private final DisplayTextFormatter displayTextFormatter;
@@ -103,6 +104,7 @@ public final class PlayerDisplayManager {
             return;
         }
 
+        boolean cleanupDuplicates = ticks % DUPLICATE_CLEANUP_INTERVAL_TICKS == 0;
         Iterator<Map.Entry<UUID, DisplayState>> iterator = displays.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, DisplayState> entry = iterator.next();
@@ -122,10 +124,14 @@ public final class PlayerDisplayManager {
 
             Entity display = displayEntity(server, state);
             if (display == null) {
+                cleanupTaggedDisplays(server, entry.getKey());
                 spawn(player, state.text());
                 continue;
             }
 
+            if (cleanupDuplicates) {
+                cleanupTaggedDisplays(server, entry.getKey(), display.getId());
+            }
             moveDisplay(player, display);
         }
     }
@@ -195,10 +201,16 @@ public final class PlayerDisplayManager {
     }
 
     private void cleanupTaggedDisplays(MinecraftServer server, UUID playerId) {
+        cleanupTaggedDisplays(server, playerId, null);
+    }
+
+    private void cleanupTaggedDisplays(MinecraftServer server, UUID playerId, Integer keptEntityId) {
         String tag = tag(playerId);
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
-                if (entity.getType() == EntityType.TEXT_DISPLAY && entity.getTags().contains(tag)) {
+                if (entity.getType() == EntityType.TEXT_DISPLAY
+                        && entity.getTags().contains(tag)
+                        && (keptEntityId == null || entity.getId() != keptEntityId)) {
                     entity.discard();
                 }
             }
