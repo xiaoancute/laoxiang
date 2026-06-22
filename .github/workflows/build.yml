@@ -29,6 +29,9 @@ jobs:
       - name: Build
         run: gradle build
 
+      - name: Smoke test packaged server jar
+        run: bash scripts/smoke-test-server.sh
+
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
