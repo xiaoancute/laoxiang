@@ -85,26 +85,6 @@ public final class LocationTemplateFormatter {
             Map.entry("yunnan", "云南省"),
             Map.entry("zhejiang", "浙江省")
     );
-    private static final Map<String, String> CHINA_CITY_BY_REGION_AND_NAME = Map.ofEntries(
-            Map.entry("JX:nanchang", "南昌市"),
-            Map.entry("JX:jingdezhen", "景德镇市"),
-            Map.entry("JX:pingxiang", "萍乡市"),
-            Map.entry("JX:jiujiang", "九江市"),
-            Map.entry("JX:xinyu", "新余市"),
-            Map.entry("JX:yingtan", "鹰潭市"),
-            Map.entry("JX:ganzhou", "赣州市"),
-            Map.entry("JX:jian", "吉安市"),
-            Map.entry("JX:ji'an", "吉安市"),
-            Map.entry("JX:yichun", "宜春市"),
-            Map.entry("JX:fuzhou", "抚州市"),
-            Map.entry("JX:shangrao", "上饶市"),
-            Map.entry("FJ:fuzhou", "福州市"),
-            Map.entry("BJ:beijing", "北京市"),
-            Map.entry("SH:shanghai", "上海市"),
-            Map.entry("TJ:tianjin", "天津市"),
-            Map.entry("CQ:chongqing", "重庆市")
-    );
-
     private final JsonPathReader jsonPathReader;
 
     public LocationTemplateFormatter(JsonPathReader jsonPathReader) {
@@ -172,11 +152,9 @@ public final class LocationTemplateFormatter {
         if (isChina(root) && city.isPresent()) {
             Optional<String> regionCode = jsonPathReader.read(root, "region_code");
             if (regionCode.isPresent()) {
-                String localized = CHINA_CITY_BY_REGION_AND_NAME.get(
-                        regionCode.get().toUpperCase(Locale.ROOT) + ":" + city.get().toLowerCase(Locale.ROOT)
-                );
-                if (localized != null) {
-                    return Optional.of(localized);
+                Optional<String> localized = ChinaCityLocalizer.localize(regionCode.get(), city.get());
+                if (localized.isPresent()) {
+                    return localized;
                 }
             }
         }

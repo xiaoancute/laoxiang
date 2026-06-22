@@ -26,6 +26,8 @@ The default displayed location template is:
 
 `%isp_localized%` normalizes common Chinese network names to `电信`, `移动`, `联通`, `广电`, or `教育网` when the lookup provider returns ISP/ASN fields. Other networks fall back to the provider's ISP name, such as `Google LLC` or `Comcast Cable`.
 
+`%country_localized%`, `%region_localized%`, and `%city_localized%` localize common China location fields returned by the default `ip-sb` provider.
+
 IP location is approximate. Mobile networks, VPNs, proxies, cloud providers, campus networks, and recently reassigned ISP ranges can show inaccurate locations.
 
 The config file is generated at `<server_folder>/config/iplocationdisplay.toml`.

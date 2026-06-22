@@ -52,6 +52,51 @@ class LocationTemplateFormatterTest {
     }
 
     @Test
+    void localizesAdditionalChinaCityFieldsFromIpSb() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "country": "China",
+                  "country_code": "CN",
+                  "region": "Guangdong",
+                  "region_code": "GD",
+                  "city": "Shenzhen"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("中国 广东省 深圳市", formatter.format(root, "%country_localized% %region_localized% %city_localized%"));
+    }
+
+    @Test
+    void localizesChinaCitiesWithCommonEnglishAliases() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "country": "China",
+                  "country_code": "CN",
+                  "region": "Heilongjiang",
+                  "region_code": "HL",
+                  "city": "Harbin"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("中国 黑龙江省 哈尔滨市", formatter.format(root, "%country_localized% %region_localized% %city_localized%"));
+    }
+
+    @Test
+    void localizesChinaCitiesWithApostrophes() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "country": "China",
+                  "country_code": "CN",
+                  "region": "Shaanxi",
+                  "region_code": "SN",
+                  "city": "Xi'an"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("中国 陕西省 西安市", formatter.format(root, "%country_localized% %region_localized% %city_localized%"));
+    }
+
+    @Test
     void localizesChineseIspFromIpSbFields() {
         JsonObject root = JsonParser.parseString("""
                 {
