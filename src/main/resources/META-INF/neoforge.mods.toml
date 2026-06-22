@@ -25,5 +25,5 @@ versionRange = "[21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-[features.iplocationdisplay]
+[features.laoxiang]
 openGLVersion = "[0,)"
