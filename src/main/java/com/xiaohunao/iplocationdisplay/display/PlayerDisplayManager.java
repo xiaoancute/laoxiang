@@ -152,10 +152,7 @@ public final class PlayerDisplayManager {
                 player.getZ(),
                 textDisplayNbt(tag, text)
         );
-        int result = runCommand(player.getServer(), command);
-        if (result <= 0) {
-            LOGGER.warn("Text display summon command returned {} for player {}", result, player.getGameProfile().getName());
-        }
+        runCommand(player.getServer(), command);
     }
 
     private void teleport(ServerPlayer player, String tag) {
@@ -186,20 +183,18 @@ public final class PlayerDisplayManager {
         runCommand(server, command);
     }
 
-    private int runCommand(MinecraftServer server, String command) {
+    private void runCommand(MinecraftServer server, String command) {
         if (server == null) {
-            return 0;
+            return;
         }
         try {
             CommandSourceStack source = server.createCommandSourceStack()
                     .withSuppressedOutput()
                     .withPermission(4);
-            int result = server.getCommands().performPrefixedCommand(source, command);
-            LOGGER.debug("Ran IP location display command with result {}: {}", result, command);
-            return result;
+            server.getCommands().performPrefixedCommand(source, command);
+            LOGGER.debug("Ran IP location display command: {}", command);
         } catch (Exception exception) {
             LOGGER.warn("Failed to run IP location display command: {}", command, exception);
-            return 0;
         }
     }
 
