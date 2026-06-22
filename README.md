@@ -136,5 +136,7 @@ Result: `[中国 广东 广州 电信 | 游玩: 120h]`
 - Local/private addresses display `localText`.
 - Unknown public locations are hidden by default.
 - Set `showUnknown = true` to display `unknownText`.
-- Display position updates every `tickInterval` server ticks. Keep `tickInterval = 1` for the most responsive tracking.
+- Displays attach to players to reduce high-speed jitter, including Elytra flight.
+- Players do not see their own display, preventing first-person view obstruction.
+- If attachment is unavailable, display position falls back to updating every `tickInterval` server ticks. Keep `tickInterval = 1` for the most responsive fallback tracking.
 - The display is removed when a player leaves or changes dimension.

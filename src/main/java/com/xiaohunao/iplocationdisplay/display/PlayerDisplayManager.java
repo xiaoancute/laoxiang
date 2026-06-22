@@ -6,6 +6,10 @@ import com.xiaohunao.iplocationdisplay.config.IpLocationConfig;
 import com.xiaohunao.iplocationdisplay.location.CachedLocationResolver;
 import com.xiaohunao.iplocationdisplay.location.IpLocation;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -132,7 +136,11 @@ public final class PlayerDisplayManager {
             if (cleanupDuplicates) {
                 cleanupTaggedDisplays(server, entry.getKey(), display.getId());
             }
-            moveDisplay(player, display);
+            if (state.attached()) {
+                keepAttached(player, display);
+            } else {
+                moveDisplay(player, display);
+            }
         }
     }
 
@@ -172,7 +180,7 @@ public final class PlayerDisplayManager {
         }
 
         display.addTag(tag(player.getUUID()));
-        display.load(textDisplayNbt(text));
+        display.load(textDisplayNbt(text, displayRenderYOffset(player)));
         display.setNoGravity(true);
         display.setInvulnerable(true);
         positionDisplay(player, display);
@@ -183,7 +191,8 @@ public final class PlayerDisplayManager {
             return;
         }
 
-        displays.put(player.getUUID(), new DisplayState(display.getId(), text, level.dimension()));
+        boolean attached = attachDisplay(player, display);
+        displays.put(player.getUUID(), new DisplayState(display.getId(), text, level.dimension(), attached));
     }
 
     private void remove(MinecraftServer server, UUID playerId) {
@@ -234,6 +243,35 @@ public final class PlayerDisplayManager {
         display.setPos(player.getX(), player.getY() + settings.verticalOffset(), player.getZ());
     }
 
+    private boolean attachDisplay(ServerPlayer player, Entity display) {
+        if (!display.startRiding(player, true)) {
+            LOGGER.warn("Failed to attach IP location display entity to {}", player.getGameProfile().getName());
+            return false;
+        }
+
+        player.positionRider(display);
+        player.serverLevel().getChunkSource().broadcast(player, new ClientboundSetPassengersPacket(player));
+        hideDisplayFromOwner(player, display);
+        return true;
+    }
+
+    private void keepAttached(ServerPlayer player, Entity display) {
+        if (display.getVehicle() != player && !attachDisplay(player, display)) {
+            moveDisplay(player, display);
+            return;
+        }
+
+        player.positionRider(display);
+    }
+
+    private void hideDisplayFromOwner(ServerPlayer player, Entity display) {
+        player.connection.send(new ClientboundRemoveEntitiesPacket(display.getId()));
+    }
+
+    private double displayRenderYOffset(ServerPlayer player) {
+        return Math.max(0.0D, settings.verticalOffset() - player.getBbHeight());
+    }
+
     private String remoteAddress(ServerPlayer player) {
         String address = remoteAddressReader.read(player.connection);
         if (address.isBlank()) {
@@ -242,7 +280,7 @@ public final class PlayerDisplayManager {
         return address;
     }
 
-    private CompoundTag textDisplayNbt(String text) {
+    private CompoundTag textDisplayNbt(String text, double renderYOffset) {
         JsonObject json = new JsonObject();
         json.addProperty("text", text);
         json.addProperty("color", "gold");
@@ -254,13 +292,32 @@ public final class PlayerDisplayManager {
         tag.putBoolean("shadow", true);
         tag.putBoolean("see_through", false);
         tag.putInt("teleport_duration", 0);
+        tag.putInt("interpolation_duration", 0);
+        tag.put("transformation", transformationNbt(renderYOffset));
         return tag;
+    }
+
+    private CompoundTag transformationNbt(double renderYOffset) {
+        CompoundTag transformation = new CompoundTag();
+        transformation.put("translation", floatList(0.0F, (float) renderYOffset, 0.0F));
+        transformation.put("scale", floatList(1.0F, 1.0F, 1.0F));
+        transformation.put("left_rotation", floatList(0.0F, 0.0F, 0.0F, 1.0F));
+        transformation.put("right_rotation", floatList(0.0F, 0.0F, 0.0F, 1.0F));
+        return transformation;
+    }
+
+    private ListTag floatList(float... values) {
+        ListTag list = new ListTag();
+        for (float value : values) {
+            list.add(FloatTag.valueOf(value));
+        }
+        return list;
     }
 
     private String tag(UUID playerId) {
         return "ipld_" + playerId.toString().replace("-", "");
     }
 
-    private record DisplayState(int entityId, String text, ResourceKey<Level> dimension) {
+    private record DisplayState(int entityId, String text, ResourceKey<Level> dimension, boolean attached) {
     }
 }
