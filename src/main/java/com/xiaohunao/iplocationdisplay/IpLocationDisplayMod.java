@@ -40,7 +40,11 @@ public final class IpLocationDisplayMod {
 
     public IpLocationDisplayMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("IP Location Display mod loaded");
-        modContainer.registerConfig(ModConfig.Type.SERVER, IpLocationConfig.SPEC);
+        modContainer.registerConfig(
+                ModConfig.Type.valueOf(IpLocationConfig.CONFIG_TYPE_NAME),
+                IpLocationConfig.SPEC,
+                IpLocationConfig.CONFIG_FILE_NAME
+        );
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);

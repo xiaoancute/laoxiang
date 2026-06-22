@@ -6,7 +6,7 @@ NeoForge 1.21.1 server-side mod that shows a player's IP location above their he
 
 1. Build the mod from GitHub Actions or download the workflow artifact.
 2. Put the jar in the NeoForge server `mods` directory.
-3. Start the server once to generate the server config.
+3. Start the server once to generate `config/iplocationdisplay.toml`.
 
 Clients do not need to install this mod.
 
@@ -26,7 +26,7 @@ The default displayed location template is:
 
 IP location is approximate. Mobile networks, VPNs, proxies, cloud providers, campus networks, and recently reassigned ISP ranges can show inaccurate locations.
 
-If you generated config with an older jar, set `httpPreset = "ip-sb"` or delete the old generated config so the server writes the new defaults.
+The config file is generated at `<server_folder>/config/iplocationdisplay.toml`.
 
 ## Privacy
 

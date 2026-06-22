@@ -6,6 +6,9 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import java.nio.file.Path;
 
 public final class IpLocationConfig {
+    public static final String CONFIG_TYPE_NAME = "COMMON";
+    public static final String CONFIG_FILE_NAME = "iplocationdisplay.toml";
+
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue ENABLED = BUILDER
