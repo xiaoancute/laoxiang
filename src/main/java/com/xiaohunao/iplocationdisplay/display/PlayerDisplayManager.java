@@ -98,6 +98,12 @@ public final class PlayerDisplayManager {
         spawn(player, previous.text());
     }
 
+    public void onPlayerStartTracking(ServerPlayer player, Entity target) {
+        if (DisplayVisibility.isOwnedTextDisplay(player.getUUID(), target)) {
+            hideDisplayFromOwner(player, target);
+        }
+    }
+
     public void tick(MinecraftServer server) {
         if (!settings.enabled() || displays.isEmpty()) {
             return;
@@ -179,7 +185,7 @@ public final class PlayerDisplayManager {
             return;
         }
 
-        display.addTag(tag(player.getUUID()));
+        display.addTag(DisplayVisibility.ownerTag(player.getUUID()));
         display.load(textDisplayNbt(text, displayRenderYOffset(player)));
         display.setNoGravity(true);
         display.setInvulnerable(true);
@@ -214,7 +220,7 @@ public final class PlayerDisplayManager {
     }
 
     private void cleanupTaggedDisplays(MinecraftServer server, UUID playerId, Integer keptEntityId) {
-        String tag = tag(playerId);
+        String tag = DisplayVisibility.ownerTag(playerId);
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
                 if (entity.getType() == EntityType.TEXT_DISPLAY
@@ -262,6 +268,7 @@ public final class PlayerDisplayManager {
         }
 
         player.positionRider(display);
+        hideDisplayFromOwner(player, display);
     }
 
     private void hideDisplayFromOwner(ServerPlayer player, Entity display) {
@@ -312,10 +319,6 @@ public final class PlayerDisplayManager {
             list.add(FloatTag.valueOf(value));
         }
         return list;
-    }
-
-    private String tag(UUID playerId) {
-        return "ipld_" + playerId.toString().replace("-", "");
     }
 
     private record DisplayState(int entityId, String text, ResourceKey<Level> dimension, boolean attached) {

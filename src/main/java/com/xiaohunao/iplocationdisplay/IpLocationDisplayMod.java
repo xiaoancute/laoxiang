@@ -50,6 +50,7 @@ public final class IpLocationDisplayMod {
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(this::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerStartTracking);
         NeoForge.EVENT_BUS.addListener(this::onServerTick);
     }
 
@@ -126,6 +127,12 @@ public final class IpLocationDisplayMod {
     private void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (displayManager != null && event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             displayManager.onPlayerChangedDimension(player);
+        }
+    }
+
+    private void onPlayerStartTracking(PlayerEvent.StartTracking event) {
+        if (displayManager != null && event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            displayManager.onPlayerStartTracking(player, event.getTarget());
         }
     }
 
