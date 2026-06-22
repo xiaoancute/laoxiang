@@ -1,0 +1,21 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+        }
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+        }
+    }
+}
+
+rootProject.name = 'minecraft-ip-location-display'

@@ -1,0 +1,71 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+neoForge {
+    version = neoforge_version
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.console.level', 'info'
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        iplocationdisplay {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.11.0'
+
+    jarJar(implementation('org.lionsoul:ip2region:2.7.0')) {
+        version {
+            strictly '[2.7,3.0)'
+            prefer '2.7.0'
+        }
+    }
+    additionalRuntimeClasspath 'org.lionsoul:ip2region:2.7.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}
