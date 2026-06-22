@@ -21,14 +21,20 @@ public final class IpLocationConfig {
             .comment("HTTP provider preset: ip-sb, ip-api-com, or custom.")
             .define("httpPreset", "ip-sb");
     public static final ModConfigSpec.ConfigValue<String> DISPLAY_FORMAT = BUILDER
-            .comment("Text format for the head display. Use %location% for the resolved location.")
-            .define("displayFormat", "[%location%]");
+            .comment("Text format for the head display. Use %location% for the resolved location and %playtime% for play time.")
+            .define("displayFormat", "%location% %playtime%");
     public static final ModConfigSpec.DoubleValue VERTICAL_OFFSET = BUILDER
             .comment("Vertical display offset above the player.")
             .defineInRange("verticalOffset", 2.6D, 0.0D, 10.0D);
     public static final ModConfigSpec.IntValue TICK_INTERVAL = BUILDER
             .comment("Display position update interval in server ticks.")
             .defineInRange("tickInterval", 1, 1, 200);
+    public static final ModConfigSpec.BooleanValue SHOW_PLAYTIME = BUILDER
+            .comment("Show player playtime in the head display.")
+            .define("showPlaytime", true);
+    public static final ModConfigSpec.IntValue PLAYTIME_HOUR_THRESHOLD = BUILDER
+            .comment("Show minutes when playtime is below this hour threshold.")
+            .defineInRange("playtimeHourThreshold", 1, 0, 100);
     public static final ModConfigSpec.BooleanValue SHOW_UNKNOWN = BUILDER
             .comment("Show unknownText when a public IP cannot be resolved.")
             .define("showUnknown", false);
@@ -78,7 +84,9 @@ public final class IpLocationConfig {
                 HTTP_SUCCESS_JSON_PATH.get(),
                 HTTP_SUCCESS_VALUE.get(),
                 HTTP_LOCATION_TEMPLATE.get(),
-                HTTP_TIMEOUT_MILLIS.get()
+                HTTP_TIMEOUT_MILLIS.get(),
+                SHOW_PLAYTIME.get(),
+                PLAYTIME_HOUR_THRESHOLD.get()
         );
     }
 
@@ -97,7 +105,9 @@ public final class IpLocationConfig {
             String httpSuccessJsonPath,
             String httpSuccessValue,
             String httpLocationTemplate,
-            int httpTimeoutMillis
+            int httpTimeoutMillis,
+            boolean showPlaytime,
+            int playtimeHourThreshold
     ) {
     }
 }
