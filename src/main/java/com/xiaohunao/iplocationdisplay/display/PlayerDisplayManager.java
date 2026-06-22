@@ -5,15 +5,18 @@ import com.mojang.logging.LogUtils;
 import com.xiaohunao.iplocationdisplay.config.IpLocationConfig;
 import com.xiaohunao.iplocationdisplay.location.CachedLocationResolver;
 import com.xiaohunao.iplocationdisplay.location.IpLocation;
-import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +87,7 @@ public final class PlayerDisplayManager {
             return;
         }
 
-        kill(server, previous);
+        discard(server, previous);
         spawn(player, previous.text());
     }
 
@@ -103,24 +106,30 @@ public final class PlayerDisplayManager {
             Map.Entry<UUID, DisplayState> entry = iterator.next();
             ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
             if (player == null) {
-                kill(server, entry.getValue());
+                discard(server, entry.getValue());
                 iterator.remove();
                 continue;
             }
 
             DisplayState state = entry.getValue();
             if (!state.dimension().equals(player.level().dimension())) {
-                kill(server, state);
+                discard(server, state);
                 spawn(player, state.text());
                 continue;
             }
 
-            teleport(player, state.tag());
+            Entity display = displayEntity(server, state);
+            if (display == null) {
+                spawn(player, state.text());
+                continue;
+            }
+
+            moveDisplay(player, display);
         }
     }
 
     public void shutdown(MinecraftServer server) {
-        displays.values().forEach(state -> kill(server, state));
+        displays.values().forEach(state -> discard(server, state));
         displays.clear();
     }
 
@@ -132,7 +141,7 @@ public final class PlayerDisplayManager {
 
         DisplayState previous = displays.remove(player.getUUID());
         if (previous != null) {
-            kill(server, previous);
+            discard(server, previous);
         }
 
         String playtimeStr = settings.showPlaytime()
@@ -146,62 +155,52 @@ public final class PlayerDisplayManager {
     }
 
     private void spawn(ServerPlayer player, String text) {
-        String tag = tag(player.getUUID());
-        ResourceKey<Level> dimension = player.level().dimension();
-        displays.put(player.getUUID(), new DisplayState(tag, text, dimension));
+        ServerLevel level = player.serverLevel();
+        Display.TextDisplay display = EntityType.TEXT_DISPLAY.create(level);
+        if (display == null) {
+            LOGGER.warn("Failed to create IP location display entity for {}", player.getGameProfile().getName());
+            return;
+        }
 
-        String command = String.format(Locale.ROOT,
-                "execute in %s run summon minecraft:text_display %.3f %.3f %.3f %s",
-                dimension.location(),
-                player.getX(),
-                player.getY() + settings.verticalOffset(),
-                player.getZ(),
-                textDisplayNbt(tag, text)
-        );
-        runCommand(player.getServer(), command);
-    }
+        display.addTag(tag(player.getUUID()));
+        display.load(textDisplayNbt(text));
+        display.setNoGravity(true);
+        display.setInvulnerable(true);
+        moveDisplay(player, display);
 
-    private void teleport(ServerPlayer player, String tag) {
-        String command = String.format(Locale.ROOT,
-                "execute in %s run tp @e[type=minecraft:text_display,tag=%s,limit=1] %.3f %.3f %.3f",
-                player.level().dimension().location(),
-                tag,
-                player.getX(),
-                player.getY() + settings.verticalOffset(),
-                player.getZ()
-        );
-        runCommand(player.getServer(), command);
+        if (!level.addFreshEntity(display)) {
+            display.discard();
+            LOGGER.warn("Failed to add IP location display entity for {}", player.getGameProfile().getName());
+            return;
+        }
+
+        displays.put(player.getUUID(), new DisplayState(display.getId(), text, level.dimension()));
     }
 
     private void remove(MinecraftServer server, UUID playerId) {
         DisplayState state = displays.remove(playerId);
         if (state != null) {
-            kill(server, state);
+            discard(server, state);
         }
     }
 
-    private void kill(MinecraftServer server, DisplayState state) {
-        String command = String.format(Locale.ROOT,
-                "execute in %s run kill @e[type=minecraft:text_display,tag=%s]",
-                state.dimension().location(),
-                state.tag()
-        );
-        runCommand(server, command);
+    private void discard(MinecraftServer server, DisplayState state) {
+        Entity display = displayEntity(server, state);
+        if (display != null) {
+            display.discard();
+        }
     }
 
-    private void runCommand(MinecraftServer server, String command) {
-        if (server == null) {
-            return;
+    private Entity displayEntity(MinecraftServer server, DisplayState state) {
+        ServerLevel level = server.getLevel(state.dimension());
+        if (level == null) {
+            return null;
         }
-        try {
-            CommandSourceStack source = server.createCommandSourceStack()
-                    .withSuppressedOutput()
-                    .withPermission(4);
-            server.getCommands().performPrefixedCommand(source, command);
-            LOGGER.debug("Ran IP location display command: {}", command);
-        } catch (Exception exception) {
-            LOGGER.warn("Failed to run IP location display command: {}", command, exception);
-        }
+        return level.getEntity(state.entityId());
+    }
+
+    private void moveDisplay(ServerPlayer player, Entity display) {
+        display.setPos(player.getX(), player.getY() + settings.verticalOffset(), player.getZ());
     }
 
     private String remoteAddress(ServerPlayer player) {
@@ -212,26 +211,25 @@ public final class PlayerDisplayManager {
         return address;
     }
 
-    private String textDisplayNbt(String tag, String text) {
+    private CompoundTag textDisplayNbt(String text) {
         JsonObject json = new JsonObject();
         json.addProperty("text", text);
         json.addProperty("color", "gold");
 
-        return String.format(Locale.ROOT,
-                "{Tags:[\"%s\"],text:'%s',billboard:\"center\",background:1073741824,shadow:1b,see_through:0b,NoGravity:1b,Invulnerable:1b}",
-                tag,
-                snbtSingleQuoted(json.toString())
-        );
-    }
-
-    private String snbtSingleQuoted(String value) {
-        return value.replace("\\", "\\\\").replace("'", "\\'");
+        CompoundTag tag = new CompoundTag();
+        tag.putString("text", json.toString());
+        tag.putString("billboard", "center");
+        tag.putInt("background", 1073741824);
+        tag.putBoolean("shadow", true);
+        tag.putBoolean("see_through", false);
+        tag.putInt("teleport_duration", Math.min(settings.tickInterval(), 59));
+        return tag;
     }
 
     private String tag(UUID playerId) {
         return "ipld_" + playerId.toString().replace("-", "");
     }
 
-    private record DisplayState(String tag, String text, ResourceKey<Level> dimension) {
+    private record DisplayState(int entityId, String text, ResourceKey<Level> dimension) {
     }
 }
