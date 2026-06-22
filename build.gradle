@@ -39,8 +39,6 @@ neoForge {
 }
 
 dependencies {
-    implementation 'com.google.code.gson:gson:2.11.0'
-
     jarJar(implementation('org.lionsoul:ip2region:2.7.0')) {
         version {
             strictly '[2.7,3.0)'
