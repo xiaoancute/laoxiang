@@ -38,6 +38,7 @@ public final class IpLocationDisplayMod {
     private PlayerDisplayManager displayManager;
 
     public IpLocationDisplayMod(IEventBus modEventBus, ModContainer modContainer) {
+        LOGGER.info("IP Location Display mod loaded");
         modContainer.registerConfig(ModConfig.Type.SERVER, IpLocationConfig.SPEC);
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
@@ -49,6 +50,8 @@ public final class IpLocationDisplayMod {
 
     private void onServerStarting(ServerStartingEvent event) {
         IpLocationConfig.RuntimeSettings settings = IpLocationConfig.runtimeSettings();
+        LOGGER.info("IP Location Display config: enabled={}, providerMode={}, displayFormat={}, showUnknown={}",
+                settings.enabled(), settings.providerMode(), settings.displayFormat(), settings.showUnknown());
         if (settings.enabled()) {
             JsonPathReader jsonPathReader = new JsonPathReader();
             LocationProvider localProvider = new Ip2RegionLocationProvider(settings.databasePath());

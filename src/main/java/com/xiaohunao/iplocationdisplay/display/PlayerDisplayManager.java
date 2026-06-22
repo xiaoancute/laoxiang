@@ -50,14 +50,22 @@ public final class PlayerDisplayManager {
             return;
         }
 
-        resolver.resolve(remoteAddress(player)).thenAccept(location -> location.ifPresent(ipLocation ->
-                server.execute(() -> {
+        String remoteAddress = remoteAddress(player);
+        LOGGER.info("Resolving IP location for {} from {}", player.getGameProfile().getName(), remoteAddress.isBlank() ? "<empty>" : remoteAddress);
+        resolver.resolve(remoteAddress).thenAccept(location -> {
+            if (location.isEmpty()) {
+                LOGGER.info("No IP location display for {} because lookup returned empty", player.getGameProfile().getName());
+                return;
+            }
+            IpLocation ipLocation = location.get();
+            LOGGER.info("Resolved IP location for {}: {}", player.getGameProfile().getName(), ipLocation.value());
+            server.execute(() -> {
                     ServerPlayer current = server.getPlayerList().getPlayer(playerId);
                     if (current != null) {
                         createOrReplace(current, ipLocation);
                     }
-                })
-        ));
+                });
+        });
     }
 
     public void onPlayerLogout(ServerPlayer player) {
@@ -144,7 +152,10 @@ public final class PlayerDisplayManager {
                 player.getZ(),
                 textDisplayNbt(tag, text)
         );
-        runCommand(player.getServer(), command);
+        int result = runCommand(player.getServer(), command);
+        if (result <= 0) {
+            LOGGER.warn("Text display summon command returned {} for player {}", result, player.getGameProfile().getName());
+        }
     }
 
     private void teleport(ServerPlayer player, String tag) {
@@ -175,17 +186,20 @@ public final class PlayerDisplayManager {
         runCommand(server, command);
     }
 
-    private void runCommand(MinecraftServer server, String command) {
+    private int runCommand(MinecraftServer server, String command) {
         if (server == null) {
-            return;
+            return 0;
         }
         try {
             CommandSourceStack source = server.createCommandSourceStack()
                     .withSuppressedOutput()
                     .withPermission(4);
-            server.getCommands().performPrefixedCommand(source, command);
+            int result = server.getCommands().performPrefixedCommand(source, command);
+            LOGGER.debug("Ran IP location display command with result {}: {}", result, command);
+            return result;
         } catch (Exception exception) {
             LOGGER.warn("Failed to run IP location display command: {}", command, exception);
+            return 0;
         }
     }
 
