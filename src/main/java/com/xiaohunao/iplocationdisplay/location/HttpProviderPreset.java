@@ -24,16 +24,16 @@ public record HttpProviderPreset(
                     customLocationTemplate
             );
             case "ip-api-com" -> new HttpProviderPreset(
-                    "http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query",
+                    "http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query,isp,org,as,asname",
                     "status",
                     "success",
-                    "%country% %regionName% %city%"
+                    "%country% %regionName% %city% %isp_localized%"
             );
             default -> new HttpProviderPreset(
                     "https://api.ip.sb/geoip/%ip%",
                     "",
                     "",
-                    "%country_localized% %region_localized% %city_localized%"
+                    "%country_localized% %region_localized% %city_localized% %isp_localized%"
             );
         };
     }

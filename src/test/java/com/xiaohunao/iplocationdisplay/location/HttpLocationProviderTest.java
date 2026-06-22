@@ -45,6 +45,7 @@ class HttpLocationProviderTest {
                   "region": "Jiangxi",
                   "region_code": "JX",
                   "city": "Ganzhou",
+                  "isp": "China Mobile communications corporation",
                   "ip": "39.176.146.30"
                 }
                 """));
@@ -53,7 +54,7 @@ class HttpLocationProviderTest {
                 "https://api.ip.sb/geoip/%ip%",
                 "",
                 "",
-                "%country_localized% %region_localized% %city_localized%",
+                "%country_localized% %region_localized% %city_localized% %isp_localized%",
                 Duration.ofMillis(2000),
                 client,
                 jsonPathReader,
@@ -62,7 +63,7 @@ class HttpLocationProviderTest {
 
         Optional<IpLocation> location = provider.lookup("39.176.146.30");
 
-        assertEquals(Optional.of(new IpLocation("中国 江西省 赣州市")), location);
+        assertEquals(Optional.of(new IpLocation("中国 江西省 赣州市 移动")), location);
         assertEquals("https://api.ip.sb/geoip/39.176.146.30", client.requestedUrl);
     }
 

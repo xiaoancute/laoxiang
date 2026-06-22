@@ -21,8 +21,10 @@ https://api.ip.sb/geoip/%ip%
 The default displayed location template is:
 
 ```text
-%country_localized% %region_localized% %city_localized%
+%country_localized% %region_localized% %city_localized% %isp_localized%
 ```
+
+`%isp_localized%` normalizes common Chinese network names to `电信`, `移动`, `联通`, `广电`, or `教育网` when the lookup provider returns ISP/ASN fields.
 
 IP location is approximate. Mobile networks, VPNs, proxies, cloud providers, campus networks, and recently reassigned ISP ranges can show inaccurate locations.
 
@@ -78,7 +80,7 @@ httpPreset = "custom"
 httpUrlTemplate = "https://example.com/lookup?ip=%ip%"
 httpSuccessJsonPath = "status"
 httpSuccessValue = "success"
-httpLocationTemplate = "%data.country% %data.region% %data.city%"
+httpLocationTemplate = "%data.country% %data.region% %data.city% %isp_localized%"
 httpTimeoutMillis = 2000
 ```
 
@@ -86,7 +88,7 @@ httpTimeoutMillis = 2000
 
 The mod can show each player's total playtime alongside their location.
 
-Default format: `中国 广东 广州 120h`
+Default format: `中国 广东 广州 电信 120h`
 
 ### Config
 
@@ -108,20 +110,20 @@ Show location and playtime (default):
 displayFormat = "%location% %playtime%"
 showPlaytime = true
 ```
-Result: `中国 广东 广州 120h`
+Result: `中国 广东 广州 电信 120h`
 
 Show only location:
 ```toml
 displayFormat = "%location%"
 showPlaytime = false
 ```
-Result: `中国 广东 广州`
+Result: `中国 广东 广州 电信`
 
 Custom format:
 ```toml
 displayFormat = "[%location% | 游玩: %playtime%]"
 ```
-Result: `[中国 广东 广州 | 游玩: 120h]`
+Result: `[中国 广东 广州 电信 | 游玩: 120h]`
 
 ### Time Display Rules
 

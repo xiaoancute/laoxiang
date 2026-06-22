@@ -50,4 +50,38 @@ class LocationTemplateFormatterTest {
 
         assertEquals("中国 江西省 赣州市", formatter.format(root, "%country_localized% %region_localized% %city_localized%"));
     }
+
+    @Test
+    void localizesChineseIspFromIpSbFields() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "isp": "CHINANET Jiangxi province network",
+                  "organization": "China Telecom",
+                  "asn_organization": "China Telecom"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("电信", formatter.format(root, "%isp_localized%"));
+    }
+
+    @Test
+    void localizesChineseIspFromIpApiFields() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "isp": "China Mobile communications corporation",
+                  "org": "CMNET",
+                  "as": "AS9808 China Mobile Communications Group Co., Ltd.",
+                  "asname": "CMNET-GD"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("移动", formatter.format(root, "%isp_localized%"));
+    }
+
+    @Test
+    void omitsUnknownLocalizedIsp() {
+        JsonObject root = JsonParser.parseString("{\"isp\":\"Example Hosting\"}").getAsJsonObject();
+
+        assertEquals("中国", formatter.format(root, "中国 %isp_localized%"));
+    }
 }

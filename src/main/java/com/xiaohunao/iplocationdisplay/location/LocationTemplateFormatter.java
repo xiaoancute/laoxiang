@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class LocationTemplateFormatter {
     private static final Pattern TOKEN = Pattern.compile("%([A-Za-z0-9_.-]+)%");
@@ -131,6 +133,7 @@ public final class LocationTemplateFormatter {
             case "country_localized" -> countryLocalized(root);
             case "region_localized" -> regionLocalized(root);
             case "city_localized" -> cityLocalized(root);
+            case "isp_localized" -> ispLocalized(root);
             default -> jsonPathReader.read(root, path);
         };
     }
@@ -182,5 +185,44 @@ public final class LocationTemplateFormatter {
 
     private boolean isChina(JsonObject root) {
         return countryLocalized(root).map(value -> value.equals("中国")).orElse(false);
+    }
+
+    private Optional<String> ispLocalized(JsonObject root) {
+        String value = Stream.of("isp", "organization", "org", "asn_organization", "asname", "as")
+                .map(path -> jsonPathReader.read(root, path))
+                .flatMap(Optional::stream)
+                .map(String::trim)
+                .filter(part -> !part.isEmpty())
+                .collect(Collectors.joining(" "))
+                .toLowerCase(Locale.ROOT);
+
+        if (value.isBlank()) {
+            return Optional.empty();
+        }
+        if (containsAny(value, "cernet", "china education and research network")) {
+            return Optional.of("教育网");
+        }
+        if (containsAny(value, "china broadnet", "china broadcasting", "broadcasting network", "cbn")) {
+            return Optional.of("广电");
+        }
+        if (containsAny(value, "china mobile", "chinamobile", "cmcc", "cmnet")) {
+            return Optional.of("移动");
+        }
+        if (containsAny(value, "china unicom", "unicom", "cncgroup", "china169")) {
+            return Optional.of("联通");
+        }
+        if (containsAny(value, "china telecom", "chinanet", "ctnet", "cn2")) {
+            return Optional.of("电信");
+        }
+        return Optional.empty();
+    }
+
+    private boolean containsAny(String value, String... needles) {
+        for (String needle : needles) {
+            if (value.contains(needle)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

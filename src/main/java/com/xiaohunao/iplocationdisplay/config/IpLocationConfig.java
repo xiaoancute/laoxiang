@@ -58,7 +58,7 @@ public final class IpLocationConfig {
             .define("httpSuccessValue", "");
     public static final ModConfigSpec.ConfigValue<String> HTTP_LOCATION_TEMPLATE = BUILDER
             .comment("Location template built from HTTP JSON fields.")
-            .define("httpLocationTemplate", "%country_localized% %region_localized% %city_localized%");
+            .define("httpLocationTemplate", "%country_localized% %region_localized% %city_localized% %isp_localized%");
     public static final ModConfigSpec.IntValue HTTP_TIMEOUT_MILLIS = BUILDER
             .comment("HTTP lookup timeout in milliseconds.")
             .defineInRange("httpTimeoutMillis", 2000, 100, 30000);

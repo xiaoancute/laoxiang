@@ -18,7 +18,24 @@ class HttpProviderPresetTest {
         assertEquals("https://api.ip.sb/geoip/%ip%", preset.urlTemplate());
         assertEquals("", preset.successJsonPath());
         assertEquals("", preset.successValue());
-        assertEquals("%country_localized% %region_localized% %city_localized%", preset.locationTemplate());
+        assertEquals("%country_localized% %region_localized% %city_localized% %isp_localized%", preset.locationTemplate());
+    }
+
+    @Test
+    void ipApiPresetRequestsAndDisplaysIspFields() {
+        HttpProviderPreset preset = HttpProviderPreset.resolve(
+                "ip-api-com",
+                "https://example.invalid/%ip%",
+                "status",
+                "success",
+                "%country% %regionName% %city%"
+        );
+
+        assertEquals(
+                "http://ip-api.com/json/%ip%?lang=zh-CN&fields=status,message,country,regionName,city,query,isp,org,as,asname",
+                preset.urlTemplate()
+        );
+        assertEquals("%country% %regionName% %city% %isp_localized%", preset.locationTemplate());
     }
 
     @Test
