@@ -82,6 +82,53 @@ httpLocationTemplate = "%data.country% %data.region% %data.city%"
 httpTimeoutMillis = 2000
 ```
 
+## Playtime Display
+
+The mod can show each player's total playtime alongside their location.
+
+Default format: `中国 广东 广州 120h`
+
+### Config
+
+```toml
+# Show playtime in display
+showPlaytime = true
+
+# Show minutes when playtime < this hour threshold
+playtimeHourThreshold = 1
+
+# Use %playtime% placeholder in displayFormat
+displayFormat = "%location% %playtime%"
+```
+
+### Examples
+
+Show location and playtime (default):
+```toml
+displayFormat = "%location% %playtime%"
+showPlaytime = true
+```
+Result: `中国 广东 广州 120h`
+
+Show only location:
+```toml
+displayFormat = "%location%"
+showPlaytime = false
+```
+Result: `中国 广东 广州`
+
+Custom format:
+```toml
+displayFormat = "[%location% | 游玩: %playtime%]"
+```
+Result: `[中国 广东 广州 | 游玩: 120h]`
+
+### Time Display Rules
+
+- Playtime < 1 hour: shows minutes (e.g., `45m`)
+- Playtime ≥ 1 hour: shows hours (e.g., `120h`)
+- Threshold is configurable via `playtimeHourThreshold`
+
 ## Display Behavior
 
 - Local/private addresses display `localText`.
