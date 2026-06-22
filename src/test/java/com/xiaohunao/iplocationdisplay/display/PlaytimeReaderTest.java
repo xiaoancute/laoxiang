@@ -15,7 +15,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(0);
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(0);
 
         PlaytimeReader reader = new PlaytimeReader(1);
         assertEquals("0m", reader.getPlaytime(player));
@@ -26,7 +26,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(36000);
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(36000);
 
         PlaytimeReader reader = new PlaytimeReader(1);
         assertEquals("30m", reader.getPlaytime(player));
@@ -37,7 +37,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(70800);
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(70800);
 
         PlaytimeReader reader = new PlaytimeReader(1);
         assertEquals("59m", reader.getPlaytime(player));
@@ -48,7 +48,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(72000);
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(72000);
 
         PlaytimeReader reader = new PlaytimeReader(1);
         assertEquals("1h", reader.getPlaytime(player));
@@ -59,7 +59,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(8640000);
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(8640000);
 
         PlaytimeReader reader = new PlaytimeReader(1);
         assertEquals("120h", reader.getPlaytime(player));
@@ -70,7 +70,7 @@ public final class PlaytimeReaderTest {
         ServerPlayer player = mock(ServerPlayer.class);
         ServerStatsCounter stats = mock(ServerStatsCounter.class);
         when(player.getStats()).thenReturn(stats);
-        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE))).thenReturn(108000); // 1.5 hours
+        when(stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))).thenReturn(108000); // 1.5 hours
 
         PlaytimeReader reader = new PlaytimeReader(2);
         assertEquals("90m", reader.getPlaytime(player));

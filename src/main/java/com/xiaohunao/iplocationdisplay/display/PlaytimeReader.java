@@ -13,7 +13,7 @@ public final class PlaytimeReader {
 
     public String getPlaytime(ServerPlayer player) {
         ServerStatsCounter stats = player.getStats();
-        int ticks = stats.getValue(Stats.CUSTOM.get(Stats.PLAY_ONE_MINUTE));
+        int ticks = stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
 
         int hours = ticks / 72000;
 
