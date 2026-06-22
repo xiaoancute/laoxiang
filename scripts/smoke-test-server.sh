@@ -11,7 +11,7 @@ if [[ -z "$NEOFORGE_VERSION" ]]; then
 fi
 
 if [[ -z "$MOD_JAR" ]]; then
-  MOD_JAR="$(find "$ROOT_DIR/build/libs" -maxdepth 1 -name 'laoxiang-*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | sort | tail -n 1)"
+  MOD_JAR="$(find "$ROOT_DIR/build/libs" -maxdepth 1 -name 'iplocationdisplay-*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | sort | tail -n 1)"
 fi
 
 if [[ ! -f "$MOD_JAR" ]]; then
