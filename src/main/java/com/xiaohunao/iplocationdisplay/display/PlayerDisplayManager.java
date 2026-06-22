@@ -6,6 +6,7 @@ import com.xiaohunao.iplocationdisplay.config.IpLocationConfig;
 import com.xiaohunao.iplocationdisplay.location.CachedLocationResolver;
 import com.xiaohunao.iplocationdisplay.location.IpLocation;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -166,7 +167,7 @@ public final class PlayerDisplayManager {
         display.load(textDisplayNbt(text));
         display.setNoGravity(true);
         display.setInvulnerable(true);
-        moveDisplay(player, display);
+        positionDisplay(player, display);
 
         if (!level.addFreshEntity(display)) {
             display.discard();
@@ -200,6 +201,11 @@ public final class PlayerDisplayManager {
     }
 
     private void moveDisplay(ServerPlayer player, Entity display) {
+        positionDisplay(player, display);
+        player.serverLevel().getChunkSource().broadcast(display, new ClientboundTeleportEntityPacket(display));
+    }
+
+    private void positionDisplay(ServerPlayer player, Entity display) {
         display.setPos(player.getX(), player.getY() + settings.verticalOffset(), player.getZ());
     }
 
