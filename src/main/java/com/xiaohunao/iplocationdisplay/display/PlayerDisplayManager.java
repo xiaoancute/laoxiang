@@ -12,8 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Method;
-import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -25,6 +23,7 @@ public final class PlayerDisplayManager {
 
     private final CachedLocationResolver resolver;
     private final DisplayTextFormatter displayTextFormatter;
+    private final RemoteAddressReader remoteAddressReader;
     private final IpLocationConfig.RuntimeSettings settings;
     private final Map<UUID, DisplayState> displays = new ConcurrentHashMap<>();
     private int ticks;
@@ -36,6 +35,7 @@ public final class PlayerDisplayManager {
     ) {
         this.resolver = resolver;
         this.displayTextFormatter = displayTextFormatter;
+        this.remoteAddressReader = new RemoteAddressReader();
         this.settings = settings;
     }
 
@@ -190,17 +190,11 @@ public final class PlayerDisplayManager {
     }
 
     private String remoteAddress(ServerPlayer player) {
-        try {
-            Object listener = player.connection;
-            Method getConnection = listener.getClass().getMethod("getConnection");
-            Object connection = getConnection.invoke(listener);
-            Method getRemoteAddress = connection.getClass().getMethod("getRemoteAddress");
-            SocketAddress remoteAddress = (SocketAddress) getRemoteAddress.invoke(connection);
-            return String.valueOf(remoteAddress);
-        } catch (Exception exception) {
-            LOGGER.debug("Unable to read remote address for {}", player.getGameProfile().getName(), exception);
-            return "";
+        String address = remoteAddressReader.read(player.connection);
+        if (address.isBlank()) {
+            LOGGER.debug("Unable to read remote address for {}", player.getGameProfile().getName());
         }
+        return address;
     }
 
     private String textDisplayNbt(String tag, String text) {
