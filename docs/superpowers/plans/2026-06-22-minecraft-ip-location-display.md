@@ -4,7 +4,7 @@
 
 **Goal:** Build a NeoForge 1.21.1 server-side mod that shows each player's IP location above their head using vanilla `TextDisplay` entities.
 
-**Architecture:** Pure Java services handle IP parsing, provider selection, HTTP/local lookup, caching, and text formatting. NeoForge-specific classes only wire server events, config, and display entity lifecycle. Runtime lookup is asynchronous so joins and ticks never block on HTTP.
+**Architecture:** Pure Java services handle IP parsing, provider selection, HTTP/local lookup, caching, and text formatting. NeoForge-specific classes only wire server events, config, and display entity lifecycle. Runtime lookup is asynchronous so joins and ticks never block on HTTP. Per user constraint, build and test verification run in GitHub Actions, not on the local machine.
 
 **Tech Stack:** Java 21, Gradle, NeoForge 21.1.234, ModDevGradle 2.0.141, JUnit 5, Gson, `org.lionsoul:ip2region:2.7.0`, vanilla `TextDisplay` entities.
 
@@ -15,6 +15,7 @@
 - `settings.gradle`: Gradle plugin repositories and root name.
 - `build.gradle`: Java, NeoForge, JUnit, Gson, and ip2region setup.
 - `gradle.properties`: mod metadata and dependency versions.
+- `.github/workflows/build.yml`: GitHub Actions build and test workflow.
 - `src/main/resources/META-INF/neoforge.mods.toml`: NeoForge mod metadata.
 - `src/main/java/com/xiaohunao/iplocationdisplay/IpLocationDisplayMod.java`: mod bootstrap, config registration, event wiring.
 - `src/main/java/com/xiaohunao/iplocationdisplay/config/IpLocationConfig.java`: NeoForge server config values and conversion to runtime settings.
@@ -40,6 +41,7 @@
 - Create: `settings.gradle`
 - Create: `build.gradle`
 - Create: `gradle.properties`
+- Create: `.github/workflows/build.yml`
 - Create: `src/main/resources/META-INF/neoforge.mods.toml`
 
 - [ ] **Step 1: Create Gradle scaffold**
@@ -83,16 +85,55 @@ mod_authors=xiaohunao
 mod_description=Shows player IP locations above player heads on NeoForge servers.
 ```
 
-- [ ] **Step 2: Run dependency verification**
+- [ ] **Step 2: Add GitHub Actions verification**
 
-Run: `./gradlew --version`
+Create `.github/workflows/build.yml`:
 
-Expected: Gradle runs with Java 21 available. If the wrapper is not present, run system `gradle wrapper --gradle-version 8.10.2` first, then use `./gradlew`.
+```yaml
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Test
+        run: gradle test
+
+      - name: Build
+        run: gradle build
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ip-location-display-jar
+          path: build/libs/*.jar
+```
+
+Verification runs after pushing to GitHub. Do not run local Gradle commands.
 
 - [ ] **Step 3: Commit scaffold**
 
 ```bash
-git add settings.gradle build.gradle gradle.properties src/main/resources/META-INF/neoforge.mods.toml gradlew gradlew.bat gradle/wrapper
+git add settings.gradle build.gradle gradle.properties .github/workflows/build.yml src/main/resources/META-INF/neoforge.mods.toml
 git commit -m "build: scaffold NeoForge mod project"
 ```
 
@@ -106,9 +147,9 @@ git commit -m "build: scaffold NeoForge mod project"
 
 Cover IPv4 with port, bracketed IPv6, slash-prefixed socket strings, localhost, RFC1918, link-local, and public addresses.
 
-Run: `./gradlew test --tests '*AddressNormalizerTest'`
+Push the tests-only commit and inspect GitHub Actions.
 
-Expected before implementation: compile failure because `AddressNormalizer` does not exist.
+Expected before implementation: the `Build` workflow fails because `AddressNormalizer` does not exist.
 
 - [ ] **Step 2: Implement `AddressNormalizer`**
 
@@ -131,7 +172,7 @@ Rules:
 
 - [ ] **Step 3: Verify tests pass**
 
-Run: `./gradlew test --tests '*AddressNormalizerTest'`
+Push the implementation commit and inspect GitHub Actions.
 
 Expected: PASS.
 
@@ -160,7 +201,7 @@ Tests:
 - missing template values are omitted.
 - `DisplayTextFormatter` turns `[%location%]` and `Guangdong` into `[Guangdong]`.
 
-Run: `./gradlew test --tests '*JsonPathReaderTest' --tests '*LocationTemplateFormatterTest' --tests '*DisplayTextFormatterTest'`
+Push the tests-only commit and inspect GitHub Actions.
 
 Expected before implementation: compile failure for missing classes.
 
@@ -184,7 +225,7 @@ public final class DisplayTextFormatter {
 
 - [ ] **Step 3: Verify tests pass**
 
-Run: `./gradlew test --tests '*JsonPathReaderTest' --tests '*LocationTemplateFormatterTest' --tests '*DisplayTextFormatterTest'`
+Push the implementation commit and inspect GitHub Actions.
 
 Expected: PASS.
 
@@ -213,7 +254,7 @@ Cover:
 - URL template replaces `%ip%`.
 - `status=fail`, HTTP 429, invalid JSON, empty formatted location, and timeout exceptions return empty.
 
-Run: `./gradlew test --tests '*HttpLocationProviderTest'`
+Push the tests-only commit and inspect GitHub Actions.
 
 Expected before implementation: compile failure for missing provider classes.
 
@@ -239,7 +280,7 @@ public record HttpLookupResponse(int statusCode, String body) {}
 
 - [ ] **Step 3: Verify tests pass**
 
-Run: `./gradlew test --tests '*HttpLocationProviderTest'`
+Push the implementation commit and inspect GitHub Actions.
 
 Expected: PASS.
 
@@ -268,7 +309,7 @@ Cover:
 - `hybrid` mode falls back to HTTP when local returns empty.
 - local provider returns empty when database path is missing.
 
-Run: `./gradlew test --tests '*LocationProvidersTest' --tests '*Ip2RegionLocationProviderTest'`
+Push the tests-only commit and inspect GitHub Actions.
 
 Expected before implementation: compile failure for missing classes.
 
@@ -284,7 +325,7 @@ public static LocationProvider choose(ProviderMode mode, LocationProvider local,
 
 - [ ] **Step 3: Verify tests pass**
 
-Run: `./gradlew test --tests '*LocationProvidersTest' --tests '*Ip2RegionLocationProviderTest'`
+Push the implementation commit and inspect GitHub Actions.
 
 Expected: PASS.
 
@@ -311,7 +352,7 @@ Cover:
 - unknown text is returned only when `showUnknown=true`.
 - lookups return `CompletableFuture<Optional<IpLocation>>`.
 
-Run: `./gradlew test --tests '*CachedLocationResolverTest'`
+Push the tests-only commit and inspect GitHub Actions.
 
 Expected before implementation: compile failure for missing resolver.
 
@@ -328,7 +369,7 @@ public void shutdown();
 
 - [ ] **Step 3: Verify tests pass**
 
-Run: `./gradlew test --tests '*CachedLocationResolverTest'`
+Push the implementation commit and inspect GitHub Actions.
 
 Expected: PASS.
 
@@ -370,11 +411,9 @@ Register `ModConfig.Type.SERVER` values matching the spec:
 
 `IpLocationDisplayMod` registers config and server event handlers. It creates provider/resolver/display manager on server start and shuts them down on server stop.
 
-- [ ] **Step 3: Build**
+- [ ] **Step 3: Verify in GitHub Actions**
 
-Run: `./gradlew build`
-
-Expected: build succeeds.
+Push the commit and inspect GitHub Actions. Expected: build succeeds.
 
 - [ ] **Step 4: Commit**
 
@@ -401,11 +440,9 @@ Runtime behavior:
 - On dimension change, discard the old display and create a new display in the new level.
 - On logout/server stop, discard display entities and clear maps.
 
-- [ ] **Step 2: Build**
+- [ ] **Step 2: Verify in GitHub Actions**
 
-Run: `./gradlew build`
-
-Expected: build succeeds.
+Push the commit and inspect GitHub Actions. Expected: build succeeds.
 
 - [ ] **Step 3: Commit**
 
@@ -429,16 +466,9 @@ Include:
 - Local database path for `ip2region.xdb`.
 - Config examples for `http`, `local`, and `hybrid`.
 
-- [ ] **Step 2: Run full verification**
+- [ ] **Step 2: Run full verification in GitHub Actions**
 
-Run:
-
-```bash
-./gradlew test
-./gradlew build
-```
-
-Expected: both commands pass.
+Push the final commit and inspect GitHub Actions. Expected: both `gradle test` and `gradle build` pass in the `Build` workflow.
 
 - [ ] **Step 3: Commit**
 
