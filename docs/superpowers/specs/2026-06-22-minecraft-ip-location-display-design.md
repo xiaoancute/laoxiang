@@ -71,7 +71,7 @@ Use a NeoForge server config with these initial options:
 - `httpPreset`: default `ip-api-com`; allowed values are `ip-api-com` and `custom`.
 - `displayFormat`: default `[%location%]`.
 - `verticalOffset`: default `2.6`.
-- `tickInterval`: update frequency, default `5` ticks.
+- `tickInterval`: update frequency, default `1` tick for smooth real-time following.
 - `showUnknown`: default `false`.
 - `unknownText`: default `Unknown`.
 - `localText`: default `Local`.
