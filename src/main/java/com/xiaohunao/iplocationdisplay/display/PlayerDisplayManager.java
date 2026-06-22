@@ -56,6 +56,7 @@ public final class PlayerDisplayManager {
             return;
         }
 
+        cleanupTaggedDisplays(server, playerId);
         String remoteAddress = remoteAddress(player);
         LOGGER.info("Resolving IP location for {} from {}", player.getGameProfile().getName(), remoteAddress.isBlank() ? "<empty>" : remoteAddress);
         resolver.resolve(remoteAddress).thenAccept(location -> {
@@ -144,6 +145,7 @@ public final class PlayerDisplayManager {
         if (previous != null) {
             discard(server, previous);
         }
+        cleanupTaggedDisplays(server, player.getUUID());
 
         String playtimeStr = settings.showPlaytime()
             ? playtimeReader.getPlaytime(player)
@@ -189,6 +191,17 @@ public final class PlayerDisplayManager {
         Entity display = displayEntity(server, state);
         if (display != null) {
             display.discard();
+        }
+    }
+
+    private void cleanupTaggedDisplays(MinecraftServer server, UUID playerId) {
+        String tag = tag(playerId);
+        for (ServerLevel level : server.getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity.getType() == EntityType.TEXT_DISPLAY && entity.getTags().contains(tag)) {
+                    entity.discard();
+                }
+            }
         }
     }
 
