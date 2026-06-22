@@ -28,7 +28,7 @@ public final class IpLocationConfig {
             .defineInRange("verticalOffset", 2.6D, 0.0D, 10.0D);
     public static final ModConfigSpec.IntValue TICK_INTERVAL = BUILDER
             .comment("Display position update interval in server ticks.")
-            .defineInRange("tickInterval", 5, 1, 200);
+            .defineInRange("tickInterval", 1, 1, 200);
     public static final ModConfigSpec.BooleanValue SHOW_UNKNOWN = BUILDER
             .comment("Show unknownText when a public IP cannot be resolved.")
             .define("showUnknown", false);
