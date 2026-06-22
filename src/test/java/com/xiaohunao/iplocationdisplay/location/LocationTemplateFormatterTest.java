@@ -35,4 +35,19 @@ class LocationTemplateFormatterTest {
 
         assertEquals("广东", formatter.format(root, "%data.region%"));
     }
+
+    @Test
+    void localizesIpSbChinaProvinceAndCityFields() {
+        JsonObject root = JsonParser.parseString("""
+                {
+                  "country": "China",
+                  "country_code": "CN",
+                  "region": "Jiangxi",
+                  "region_code": "JX",
+                  "city": "Ganzhou"
+                }
+                """).getAsJsonObject();
+
+        assertEquals("中国 江西省 赣州市", formatter.format(root, "%country_localized% %region_localized% %city_localized%"));
+    }
 }

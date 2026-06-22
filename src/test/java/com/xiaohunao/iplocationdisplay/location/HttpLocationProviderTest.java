@@ -37,6 +37,36 @@ class HttpLocationProviderTest {
     }
 
     @Test
+    void resolvesIpSbResponseWithoutSuccessMarker() throws Exception {
+        FakeHttpLookupClient client = new FakeHttpLookupClient(new HttpLookupResponse(200, """
+                {
+                  "country": "China",
+                  "country_code": "CN",
+                  "region": "Jiangxi",
+                  "region_code": "JX",
+                  "city": "Ganzhou",
+                  "ip": "39.176.146.30"
+                }
+                """));
+        JsonPathReader jsonPathReader = new JsonPathReader();
+        HttpLocationProvider provider = new HttpLocationProvider(
+                "https://api.ip.sb/geoip/%ip%",
+                "",
+                "",
+                "%country_localized% %region_localized% %city_localized%",
+                Duration.ofMillis(2000),
+                client,
+                jsonPathReader,
+                new LocationTemplateFormatter(jsonPathReader)
+        );
+
+        Optional<IpLocation> location = provider.lookup("39.176.146.30");
+
+        assertEquals(Optional.of(new IpLocation("中国 江西省 赣州市")), location);
+        assertEquals("https://api.ip.sb/geoip/39.176.146.30", client.requestedUrl);
+    }
+
+    @Test
     void returnsEmptyForHttp429() throws Exception {
         FakeHttpLookupClient client = new FakeHttpLookupClient(new HttpLookupResponse(429, "Too Many Requests"));
 
