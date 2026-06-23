@@ -243,6 +243,7 @@ public final class PlayerDisplayManager {
     private void moveDisplay(ServerPlayer player, Entity display) {
         positionDisplay(player, display);
         player.serverLevel().getChunkSource().broadcast(display, new ClientboundTeleportEntityPacket(display));
+        hideDisplayFromOwner(player, display);
     }
 
     private void positionDisplay(ServerPlayer player, Entity display) {
