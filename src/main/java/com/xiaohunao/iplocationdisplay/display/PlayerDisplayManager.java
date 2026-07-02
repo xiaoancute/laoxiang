@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class PlayerDisplayManager {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int DUPLICATE_CLEANUP_INTERVAL_TICKS = 20;
 
     private final CachedLocationResolver resolver;
     private final DisplayTextFormatter displayTextFormatter;
@@ -114,7 +113,6 @@ public final class PlayerDisplayManager {
             return;
         }
 
-        boolean cleanupDuplicates = ticks % DUPLICATE_CLEANUP_INTERVAL_TICKS == 0;
         Iterator<Map.Entry<UUID, DisplayState>> iterator = displays.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, DisplayState> entry = iterator.next();
@@ -139,9 +137,6 @@ public final class PlayerDisplayManager {
                 continue;
             }
 
-            if (cleanupDuplicates) {
-                cleanupTaggedDisplays(server, entry.getKey(), display.getId());
-            }
             if (state.attached()) {
                 keepAttached(player, display);
             } else {
