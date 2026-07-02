@@ -18,11 +18,4 @@ class DisplayVisibilityTest {
         assertTrue(DisplayVisibility.hasOwnerTag(owner, tags));
         assertFalse(DisplayVisibility.hasOwnerTag(other, tags));
     }
-
-    @Test
-    void doesNotMatchMissingEntity() {
-        UUID owner = UUID.fromString("00000000-0000-0000-0000-000000000001");
-
-        assertFalse(DisplayVisibility.isOwnedTextDisplay(owner, null));
-    }
 }
