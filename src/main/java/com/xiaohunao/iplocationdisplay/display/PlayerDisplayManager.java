@@ -220,11 +220,9 @@ public final class PlayerDisplayManager {
     }
 
     private void cleanupTaggedDisplays(MinecraftServer server, UUID playerId, Integer keptEntityId) {
-        String tag = DisplayVisibility.ownerTag(playerId);
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
-                if (entity.getType() == EntityType.TEXT_DISPLAY
-                        && entity.getTags().contains(tag)
+                if (DisplayVisibility.isOwnedTextDisplay(playerId, entity)
                         && (keptEntityId == null || entity.getId() != keptEntityId)) {
                     entity.discard();
                 }

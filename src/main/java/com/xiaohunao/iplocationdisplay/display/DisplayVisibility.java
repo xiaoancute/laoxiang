@@ -19,6 +19,6 @@ final class DisplayVisibility {
     }
 
     static boolean isOwnedTextDisplay(UUID playerId, Entity entity) {
-        return entity.getType() == EntityType.TEXT_DISPLAY && hasOwnerTag(playerId, entity.getTags());
+        return entity != null && entity.getType() == EntityType.TEXT_DISPLAY && hasOwnerTag(playerId, entity.getTags());
     }
 }
